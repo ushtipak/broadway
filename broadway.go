@@ -7,7 +7,8 @@ import (
 	"io"
 	"os"
 	"io/ioutil"
-)
+	"strings"
+	)
 
 var (
 	port               = "7835"
@@ -36,9 +37,14 @@ func main() {
 }
 
 func voteHandler(_ http.ResponseWriter, r *http.Request) {
-	resp, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		logError.Println(err)
+	auth := strings.SplitN(r.Header["Authorization"][0], " ", 2)[1]
+	if auth != "eC10c2hpcnRicm9kb3duLWF1dGgtdG9rZW4xOmEyNDA4ODY4LTNmMGEtNDViMi1hZDRiLTI1NjUyODk5YTliMg==" {
+		logError.Printf("unauthorized")
+	} else {
+		resp, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			logError.Println(err)
+		}
+		logDebug.Printf("%s", resp)
 	}
-	logDebug.Printf("%s", resp)
 }

@@ -9,10 +9,12 @@ import (
 	"io/ioutil"
 )
 
-var votes []string
-var logDebug, logError *log.Logger
-var logFd = "output.log"
-
+var (
+	port               = "7835"
+	logFd              = "output.log"
+	votes              []string
+	logDebug, logError *log.Logger
+)
 
 func init() {
 	logFile, err := os.OpenFile(logFd, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
@@ -29,10 +31,11 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/vote", voteHandler)
 
-	log.Fatal(http.ListenAndServe(":7835", mux))
+	logDebug.Printf("brodway listen on %s", port)
+	log.Fatal(http.ListenAndServe(":"+port, mux))
 }
 
-func voteHandler(w http.ResponseWriter, r *http.Request) {
+func voteHandler(_ http.ResponseWriter, r *http.Request) {
 	resp, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		logError.Println(err)

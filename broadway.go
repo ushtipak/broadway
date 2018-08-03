@@ -2,13 +2,13 @@ package main
 
 import (
 	"log"
-	"time"
 	"net/http"
 	"io"
 	"os"
 	"strings"
 	"io/ioutil"
 	"html/template"
+	"fmt"
 )
 
 var (
@@ -17,17 +17,18 @@ var (
 	templateFd         = "/var/www/html/brodown/template.html"
 	resultsFd          = "/var/www/html/brodown/index.html"
 	voteResult         = VoteResult{Blue: 0, Yellow: 0}
-	votes              []string
+	renderResult       RenderResult
 	logDebug, logError *log.Logger
 )
-
-type Vote struct {
-	Color string `json:"color"`
-}
 
 type VoteResult struct {
 	Blue   int
 	Yellow int
+}
+
+type RenderResult struct {
+	Blue   string
+	Yellow string
 }
 
 func checkErr(err error) {
@@ -46,8 +47,6 @@ func init() {
 }
 
 func main() {
-	votes = append(votes, time.Now().Format(time.RFC3339))
-
 	mux := http.NewServeMux()
 	mux.HandleFunc("/vote", voteHandler)
 
@@ -77,6 +76,9 @@ func voteHandler(_ http.ResponseWriter, r *http.Request) {
 		t, err := template.ParseFiles(templateFd)
 		checkErr(err)
 
-		t.Execute(results, voteResult)
+		renderResult.Blue = fmt.Sprintf("%03d", voteResult.Blue)
+		renderResult.Yellow = fmt.Sprintf("%03d", voteResult.Yellow)
+
+		t.Execute(results, renderResult)
 	}
 }

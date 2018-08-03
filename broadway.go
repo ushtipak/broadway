@@ -8,14 +8,29 @@ import (
 	"os"
 	"io/ioutil"
 	"strings"
-	)
+	"html/template"
+)
 
 var (
 	port               = "7835"
 	logFd              = "output.log"
+	templateFd 		   = "public_html/template.html"
+	resultsFd          = "public_html/index.html"
 	votes              []string
 	logDebug, logError *log.Logger
+	voteResult         = VoteResult{Blue: 0, Yellow: 0}
 )
+
+type VoteResult struct {
+	Blue   int
+	Yellow int
+}
+
+func checkErr(err error) {
+	if err != nil {
+		logError.Println(err)
+	}
+}
 
 func init() {
 	logFile, err := os.OpenFile(logFd, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
@@ -42,9 +57,15 @@ func voteHandler(_ http.ResponseWriter, r *http.Request) {
 		logError.Printf("unauthorized")
 	} else {
 		resp, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			logError.Println(err)
-		}
+		checkErr(err)
 		logDebug.Printf("%s", resp)
+
+		results, err := os.Create(resultsFd)
+		checkErr(err)
+
+		t, err := template.ParseFiles(templateFd)
+		checkErr(err)
+
+		t.Execute(results, voteResult)
 	}
 }

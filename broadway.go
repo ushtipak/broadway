@@ -14,8 +14,8 @@ import (
 var (
 	port               = "7835"
 	logFd              = "output.log"
-	templateFd         = "public_html/template.html"
-	resultsFd          = "public_html/index.html"
+	templateFd         = "/var/www/html/brodown/template.html"
+	resultsFd          = "/var/www/html/brodown/index.html"
 	voteResult         = VoteResult{Blue: 0, Yellow: 0}
 	votes              []string
 	logDebug, logError *log.Logger

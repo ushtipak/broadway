@@ -7,7 +7,7 @@ import (
 	"io"
 	"os"
 	"strings"
-	"encoding/json"
+	"io/ioutil"
 	"html/template"
 )
 
@@ -60,17 +60,16 @@ func voteHandler(_ http.ResponseWriter, r *http.Request) {
 	if auth != "eC10c2hpcnRicm9kb3duLWF1dGgtdG9rZW4xOmEyNDA4ODY4LTNmMGEtNDViMi1hZDRiLTI1NjUyODk5YTliMg==" {
 		logError.Printf("unauthorized")
 	} else {
-		var vote Vote
-		decoder := json.NewDecoder(r.Body)
-		err := decoder.Decode(&vote)
-		checkErr(err)
+		resp, _ := ioutil.ReadAll(r.Body)
+		logDebug.Printf("%s", resp)
 
-		if vote.Color == "blue" {
+		if string(resp) == "color=blue" {
 			voteResult.Blue += 1
 		}
-		if vote.Color == "yellow" {
+		if string(resp) == "color=yellow" {
 			voteResult.Yellow += 1
 		}
+		logDebug.Println(voteResult)
 
 		results, err := os.Create(resultsFd)
 		checkErr(err)

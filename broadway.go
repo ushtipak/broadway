@@ -6,9 +6,9 @@ import (
 	"io"
 	"os"
 	"strings"
-	"io/ioutil"
 	"html/template"
 	"fmt"
+	"encoding/json"
 )
 
 var (
@@ -20,6 +20,10 @@ var (
 	renderResult       RenderResult
 	logDebug, logError *log.Logger
 )
+
+type Vote struct {
+	Color string `json:"color"`
+}
 
 type VoteResult struct {
 	Blue   int
@@ -59,13 +63,17 @@ func voteHandler(_ http.ResponseWriter, r *http.Request) {
 	if auth != "eC10c2hpcnRicm9kb3duLWF1dGgtdG9rZW4xOmEyNDA4ODY4LTNmMGEtNDViMi1hZDRiLTI1NjUyODk5YTliMg==" {
 		logError.Printf("unauthorized")
 	} else {
-		resp, _ := ioutil.ReadAll(r.Body)
-		logDebug.Printf("%s", resp)
+		var vote Vote
+		decoder := json.NewDecoder(r.Body)
+		err := decoder.Decode(&vote)
+		checkErr(err)
 
-		if string(resp) == "color=blue" {
+		logDebug.Printf("%s", vote)
+
+		if vote.Color == "blue" {
 			voteResult.Blue += 1
 		}
-		if string(resp) == "color=yellow" {
+		if vote.Color == "yellow" {
 			voteResult.Yellow += 1
 		}
 		logDebug.Println(voteResult)
